@@ -10,6 +10,7 @@ import { PersistentSessionManager } from './session/PersistentSessionManager';
 import { IdentityCache } from './cache/IdentityCache';
 import { OpenAIDriver } from './OpenAIDriver';
 import { PersistentMemoryStore } from './storage/PersistentMemoryStore';
+import { SecureMemoryStore } from './security/SecureMemoryStore';
 import { SnapshotStore } from './storage/SnapshotStore'
 import { BridgeManager } from './bridges/BridgeManager';
 import { TelegramBridge } from './bridges/TelegramBridge';
@@ -28,7 +29,8 @@ const USE_OPENAI = OPENAI_API_KEY.length > 0;
 const identityManager = new IdentityManager();
 const sessionManager = new PersistentSessionManager();
 const identityCache = new IdentityCache(300000);
-const memory = new PersistentMemoryStore();
+const memory = new PersistentMemoryStore()
+const secureMemory = new SecureMemoryStore(memory);;
 const snapshotStore = new SnapshotStore()
 const relationshipStore = new RelationshipStore()
 const bridgeManager = new BridgeManager(runtime);
@@ -40,7 +42,7 @@ const engine = new SimpleEngine();
 const compiler = new ConversationCompiler();
 const driver = USE_OPENAI ? new OpenAIDriver(OPENAI_API_KEY) : new MockDriver();
 
-const runtime = new PersonaRuntime(identityManager, sessionManager, memory, engine, compiler, driver);
+const runtime = new PersonaRuntime(identityManager, sessionManager, secureMemory, engine, compiler, driver);
 
 app.post('/identity/load', (req, res) => {
   const persona: Persona = req.body;
@@ -142,7 +144,7 @@ app.get('/runtime/status', (_, res) => {
     identities: identityCount.count,
     sessions: sessionManager.size,
     cache: identityCache.size,
-    storage: 'sqlite'
+    storage: 'sqlite (encrypted)', encryption: process.env.ENCRYPTION_KEY ? 'AES-256-GCM' : 'none (auto-generated)'
   });
 });
 
@@ -178,6 +180,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 
