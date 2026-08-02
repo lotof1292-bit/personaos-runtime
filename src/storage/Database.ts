@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+﻿import Database from 'better-sqlite3';
 import path from 'path';
 
 const DB_PATH = process.env.PERSONAOS_DB_PATH || './data/personaos.db';
@@ -18,7 +18,7 @@ export function getDb(): Database.Database {
 }
 
 function initSchema(): void {
-  db.exec(\
+  db.exec(`
     CREATE TABLE IF NOT EXISTS identities (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -42,11 +42,20 @@ function initSchema(): void {
       FOREIGN KEY (identity_id) REFERENCES identities(id)
     );
 
-    CREATE TABLE IF NOT EXISTS relationships (id INTEGER PRIMARY KEY AUTOINCREMENT, identity_id TEXT NOT NULL, target_identity_id TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'friend', strength REAL NOT NULL DEFAULT 0.5, metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')), UNIQUE(identity_id, target_identity_id), FOREIGN KEY (identity_id) REFERENCES identities(id), FOREIGN KEY (target_identity_id) REFERENCES identities(id));
+    CREATE TABLE IF NOT EXISTS relationships (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      identity_id TEXT NOT NULL,
+      target_identity_id TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'friend',
+      strength REAL NOT NULL DEFAULT 0.5,
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(identity_id, target_identity_id),
+      FOREIGN KEY (identity_id) REFERENCES identities(id),
+      FOREIGN KEY (target_identity_id) REFERENCES identities(id)
+    );
 
-    CREATE TABLE IF NOT EXISTS relationships (id INTEGER PRIMARY KEY AUTOINCREMENT, identity_id TEXT NOT NULL, target_identity_id TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'friend', strength REAL NOT NULL DEFAULT 0.5, metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')), UNIQUE(identity_id, target_identity_id), FOREIGN KEY (identity_id) REFERENCES identities(id), FOREIGN KEY (target_identity_id) REFERENCES identities(id));
-
-    CREATE TABLE IF NOT EXISTS versions (id TEXT PRIMARY KEY, identity_id TEXT NOT NULL, version_number INTEGER NOT NULL, snapshot TEXT NOT NULL, diff TEXT, message TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')), UNIQUE(identity_id, version_number), FOREIGN KEY (identity_id) REFERENCES identities(id));
     CREATE TABLE IF NOT EXISTS snapshots (
       id TEXT PRIMARY KEY,
       identity_id TEXT NOT NULL,
@@ -54,7 +63,19 @@ function initSchema(): void {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (identity_id) REFERENCES identities(id)
     );
-  \);
+
+    CREATE TABLE IF NOT EXISTS versions (
+      id TEXT PRIMARY KEY,
+      identity_id TEXT NOT NULL,
+      version_number INTEGER NOT NULL,
+      snapshot TEXT NOT NULL,
+      diff TEXT,
+      message TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(identity_id, version_number),
+      FOREIGN KEY (identity_id) REFERENCES identities(id)
+    );
+  `);
 }
 
 export function closeDb(): void {

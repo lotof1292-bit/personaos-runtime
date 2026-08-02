@@ -1,11 +1,12 @@
-﻿import { DriverCapabilities } from "./IRCompiler";
-
-export { ProviderPayload } from "./IRCompiler";
-
 export interface DriverCapabilities {
   streaming: boolean;
   maxTokens: number;
   models: string[];
+}
+
+export interface ProviderPayload {
+  system: string;
+  messages: unknown[];
 }
 
 export interface ProviderDriver {

@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import { IdentityManager } from '../IdentityManager';
 import { PersistentMemoryStore } from '../storage/PersistentMemoryStore';
 import { SnapshotStore } from '../storage/SnapshotStore';
@@ -27,7 +27,6 @@ export class CloudApiServer {
   }
 
   private setupRoutes(): void {
-    // Identidades
     this.app.post('/v1/identities', (req, res) => {
       const { id, name, traits } = req.body;
       if (!id || !name) return res.status(400).json({ error: 'id and name required' });
@@ -57,7 +56,6 @@ export class CloudApiServer {
       res.json(rows);
     });
 
-    // Memorias
     this.app.get('/v1/identities/:id/memories', async (req, res) => {
       const memories = await this.memory.load(req.params.id);
       res.json(memories);
@@ -70,13 +68,11 @@ export class CloudApiServer {
       res.status(201).json({ ok: true });
     });
 
-    // Snapshots
     this.app.post('/v1/identities/:id/snapshots', async (req, res) => {
       const memories = await this.memory.load(req.params.id);
       const snapshotData = { memories, timestamp: new Date().toISOString() };
       const snapshotId = this.snapshotStore.save(req.params.id, snapshotData);
-      // Guardar versión automáticamente
-      this.versionEngine.save(req.params.id, snapshotData, 'Snapshot automático');
+      this.versionEngine.save(req.params.id, snapshotData, 'Snapshot automatico');
       res.status(201).json({ snapshotId });
     });
 
@@ -91,7 +87,6 @@ export class CloudApiServer {
       res.json(snapshots);
     });
 
-    // Relaciones
     this.app.post('/v1/identities/:id/relationships', (req, res) => {
       const { targetId, type, strength, metadata } = req.body;
       if (!targetId) return res.status(400).json({ error: 'targetId required' });
@@ -104,7 +99,6 @@ export class CloudApiServer {
       res.json(relationships);
     });
 
-    // Versiones
     this.app.get('/v1/identities/:id/versions', (req, res) => {
       const versions = this.versionEngine.listVersions(req.params.id);
       res.json(versions);
@@ -121,7 +115,6 @@ export class CloudApiServer {
       }
     });
 
-    // Salud
     this.app.get('/v1/health', (_, res) => {
       res.json({ status: 'ok', timestamp: new Date().toISOString() });
     });
@@ -129,32 +122,11 @@ export class CloudApiServer {
 
   start(port: number = 4871): void {
     this.server = this.app.listen(port, () => {
-      console.log(`Persona Cloud API v1.0 running on port ${port}`);
-      console.log('Endpoints:');
-      console.log('  GET    /v1/health');
-      console.log('  POST   /v1/identities');
-      console.log('  GET    /v1/identities');
-      console.log('  GET    /v1/identities/:id');
-      console.log('  DELETE /v1/identities/:id');
-      console.log('  GET    /v1/identities/:id/memories');
-      console.log('  POST   /v1/identities/:id/memories');
-      console.log('  POST   /v1/identities/:id/snapshots');
-      console.log('  GET    /v1/identities/:id/snapshots');
-      console.log('  POST   /v1/identities/:id/relationships');
-      console.log('  GET    /v1/identities/:id/relationships');
-      console.log('  GET    /v1/identities/:id/versions');
-      console.log('  POST   /v1/identities/:id/rollback');
+      console.log('Persona Cloud API v1.0 running on port ' + port);
     });
   }
 
   stop(): void {
     if (this.server) this.server.close();
   }
-}
-
-// Si se ejecuta directamente como script
-if (require.main === module) {
-  const server = new CloudApiServer();
-  const port = parseInt(process.env.CLOUD_API_PORT || '4871');
-  server.start(port);
 }
