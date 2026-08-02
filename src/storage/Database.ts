@@ -18,7 +18,7 @@ export function getDb(): Database.Database {
 }
 
 function initSchema(): void {
-  db.exec(`
+  db.exec(\
     CREATE TABLE IF NOT EXISTS identities (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -49,7 +49,7 @@ function initSchema(): void {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (identity_id) REFERENCES identities(id)
     );
-  `);
+  \);
 }
 
 export function closeDb(): void {
