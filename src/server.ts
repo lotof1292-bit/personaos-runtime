@@ -23,7 +23,39 @@ import { WhatsAppBridge } from './bridges/WhatsAppBridge';;;;
 import { getDb, closeDb } from './storage/Database';
 
 const app = express()
-mountStudio(app);
+mountStudio(app)
+
+const { ConversationSimulator } = require('./studio/ConversationSimulator');
+const { RuntimeDebugger } = require('./studio/RuntimeDebugger');
+const simulator = new ConversationSimulator();
+const debuggerInstance = new RuntimeDebugger();
+
+app.post("/studio/simulate", async (req, res) => {
+  const { identityId, persona, conversations } = req.body;
+  if (!identityId || !persona || !conversations) {
+    return res.status(400).json({ error: "identityId, persona and conversations required" });
+  }
+  try {
+    const result = await simulator.simulate(identityId, persona, conversations);
+    res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/studio/debug/events", (req, res) => {
+  const type = req.query.type as string || undefined;
+  res.json(debuggerInstance.getEvents(type as any));
+});
+
+app.post("/studio/debug/clear", (req, res) => {
+  debuggerInstance.clear();
+  res.json({ ok: true });
+});
+
+app.get("/studio/debug/status", (req, res) => {
+  res.json(debuggerInstance.getStatus());
+});;
 app.use(express.json())
 // Middleware de autenticación (excepto para endpoints públicos)
 app.use((req, res, next) => {
@@ -208,6 +240,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 

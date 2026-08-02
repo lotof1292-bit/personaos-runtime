@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -32,9 +32,9 @@
       <button onclick="loadIdentity()">Cargar</button>
       <button onclick="unloadIdentity()">Descargar</button>
       <hr>
-      <h2>SesiÃ³n</h2>
+      <h2>Sesión</h2>
       <input id="sessionId" placeholder="Session ID" readonly>
-      <button onclick="createSession()">Crear sesiÃ³n</button>
+      <button onclick="createSession()">Crear sesión</button>
       <hr>
       <h2>Chat</h2>
       <input id="messageInput" placeholder="Mensaje..." onkeypress="if(event.key==='Enter') sendMessage()">
@@ -92,14 +92,14 @@
       const data = await fetch('/session/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identityId }) });
       const json = await data.json();
       document.getElementById('sessionId').value = json.session.id;
-      log(`SesiÃ³n creada: ${json.session.id}`, 'assistant');
+      log(`Sesión creada: ${json.session.id}`, 'assistant');
     }
 
     async function sendMessage() {
       const session = document.getElementById('sessionId').value;
       const message = document.getElementById('messageInput').value;
       if (!session || !message) return;
-      log(`TÃº: ${message}`, 'user');
+      log(`Tú: ${message}`, 'user');
       const data = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session, message }) });
       const json = await data.json();
       if (json.error) log(`Error: ${json.error}`, 'error');
@@ -129,6 +129,38 @@
 
     // Inicializar
     getStatus();
-  </script>
+  function showTab(tab) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'flex';
+}
+
+async function runSimulation() {
+  const input = document.getElementById('simInput').value;
+  try {
+    const conversations = JSON.parse(input);
+    const data = await fetch('/studio/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identityId: 'alex', persona: { id: 'alex', name: 'Alex', traits: {} }, conversations })
+    });
+    const result = await data.json();
+    document.getElementById('simResult').textContent = JSON.stringify(result, null, 2);
+  } catch (e) {
+    document.getElementById('simResult').textContent = 'Error: ' + e.message;
+  }
+}
+
+async function getDebugEvents() {
+  const data = await fetch('/studio/debug/events');
+  const events = await data.json();
+  document.getElementById('debugOutput').textContent = JSON.stringify(events, null, 2);
+}
+
+async function clearDebugEvents() {
+  await fetch('/studio/debug/clear', { method: 'POST' });
+  document.getElementById('debugOutput').textContent = 'Eventos limpiados.';
+}
+</script>
 </body>
 </html>
+
