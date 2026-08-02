@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"`n    "start:cloud": "node dist/cloud-api/index.js",
+    "dev": "ts-node src/index.ts"`n    "dev:cloud": "ts-node src/cloud-api/index.ts",
     "test": "jest --coverage"`n    "test:watch": "jest --watch"`n    "benchmark": "jest tests/benchmark.test.ts --verbose --no-coverage"`n    "test:all": "jest --coverage --verbose"
   },
   "dependencies": {
@@ -25,4 +25,5 @@
     "typescript": "^5.3.3"
   }
 }
+
 
