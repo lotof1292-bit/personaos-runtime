@@ -11,6 +11,7 @@ import { IdentityCache } from './cache/IdentityCache';
 import { OpenAIDriver } from './OpenAIDriver';
 import { PersistentMemoryStore } from './storage/PersistentMemoryStore';
 import { SnapshotStore } from './storage/SnapshotStore'
+import { RelationshipStore } from './storage/RelationshipStore'
 import { RelationshipStore } from './storage/RelationshipStore';
 import { getDb, closeDb } from './storage/Database';
 
@@ -26,6 +27,7 @@ const sessionManager = new PersistentSessionManager();
 const identityCache = new IdentityCache(300000);
 const memory = new PersistentMemoryStore();
 const snapshotStore = new SnapshotStore()
+const relationshipStore = new RelationshipStore()
 const relationshipStore = new RelationshipStore();
 const engine = new SimpleEngine();
 const compiler = new ConversationCompiler();
@@ -139,6 +141,7 @@ const server = app.listen(PORT, () => {
   console.log(\Memory.............READY (SQLite)\);
   console.log(\Drivers............READY\);
   console.log(\Snapshots..........READY
+   Relationships.......READY
    Relationships.......READY\);
   console.log(\Listening..........localhost:\\);
   if (USE_OPENAI) {
@@ -162,4 +165,5 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
