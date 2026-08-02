@@ -11,8 +11,10 @@ import { IdentityCache } from './cache/IdentityCache';
 import { OpenAIDriver } from './OpenAIDriver';
 import { PersistentMemoryStore } from './storage/PersistentMemoryStore';
 import { SnapshotStore } from './storage/SnapshotStore'
-import { RelationshipStore } from './storage/RelationshipStore'
-import { RelationshipStore } from './storage/RelationshipStore';
+import { BridgeManager } from './bridges/BridgeManager';
+import { TelegramBridge } from './bridges/TelegramBridge';
+import { BridgeManager } from './bridges/BridgeManager';
+import { TelegramBridge } from './bridges/TelegramBridge';;
 import { getDb, closeDb } from './storage/Database';
 
 const app = express();
@@ -28,7 +30,11 @@ const identityCache = new IdentityCache(300000);
 const memory = new PersistentMemoryStore();
 const snapshotStore = new SnapshotStore()
 const relationshipStore = new RelationshipStore()
-const relationshipStore = new RelationshipStore();
+const bridgeManager = new BridgeManager(runtime);
+bridgeManager.register(new TelegramBridge());
+const relationshipStore = new RelationshipStore()
+const bridgeManager = new BridgeManager(runtime);
+bridgeManager.register(new TelegramBridge());;
 const engine = new SimpleEngine();
 const compiler = new ConversationCompiler();
 const driver = USE_OPENAI ? new OpenAIDriver(OPENAI_API_KEY) : new MockDriver();
@@ -171,6 +177,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 
