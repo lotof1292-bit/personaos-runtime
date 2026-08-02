@@ -17,7 +17,8 @@ import { BridgeManager } from './bridges/BridgeManager';
 import { TelegramBridge } from './bridges/TelegramBridge';;
 import { getDb, closeDb } from './storage/Database';
 
-const app = express();
+const app = express()
+mountStudio(app);
 app.use(express.json());
 
 const PORT = process.env.PORT || 4870;
@@ -177,6 +178,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 

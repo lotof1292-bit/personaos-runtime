@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Persona Studio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #0a0a0f; color: #0f0; padding: 20px; }
+    h1 { color: #0f0; border-bottom: 1px solid #0f0; padding-bottom: 10px; }
+    .container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .panel { background: #111; border: 1px solid #0f0; padding: 15px; flex: 1; min-width: 300px; }
+    h2 { font-size: 1rem; margin-bottom: 10px; color: #0f0; }
+    input, button, textarea { width: 100%; margin: 5px 0; padding: 8px; background: #000; color: #0f0; border: 1px solid #0f0; }
+    button { cursor: pointer; }
+    button:hover { background: #0f0; color: #000; }
+    pre { background: #000; padding: 10px; overflow-x: auto; max-height: 300px; }
+    .log { background: #000; padding: 10px; height: 400px; overflow-y: auto; font-size: 0.9rem; }
+    .log div { border-bottom: 1px solid #222; padding: 4px 0; }
+    .user { color: #88f; }
+    .assistant { color: #0f0; }
+    .error { color: #f44; }
+  </style>
+</head>
+<body>
+  <h1>Persona Studio v1.0</h1>
+  <div class="container">
+    <div class="panel">
+      <h2>Identidad</h2>
+      <input id="identityId" placeholder="ID (ej: alex)" value="alex">
+      <input id="identityName" placeholder="Nombre" value="Alex">
+      <button onclick="loadIdentity()">Cargar</button>
+      <button onclick="unloadIdentity()">Descargar</button>
+      <hr>
+      <h2>Sesión</h2>
+      <input id="sessionId" placeholder="Session ID" readonly>
+      <button onclick="createSession()">Crear sesión</button>
+      <hr>
+      <h2>Chat</h2>
+      <input id="messageInput" placeholder="Mensaje..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()">Enviar</button>
+      <div class="log" id="chatlog"></div>
+    </div>
+    <div class="panel">
+      <h2>Estado</h2>
+      <pre id="status"></pre>
+      <button onclick="getStatus()">Refrescar</button>
+      <hr>
+      <h2>Genoma</h2>
+      <pre id="genome"></pre>
+      <button onclick="getGenome()">Cargar genoma</button>
+      <hr>
+      <h2>Relaciones</h2>
+      <pre id="relationships"></pre>
+      <button onclick="listRelationships()">Listar</button>
+    </div>
+  </div>
+  <script>
+    const BASE = '/studio';
+
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(path.startsWith('http') ? path : BASE + path, opts);
+      return res.json();
+    }
+
+    function log(msg, type='assistant') {
+      const chatlog = document.getElementById('chatlog');
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = msg;
+      chatlog.appendChild(div);
+      chatlog.scrollTop = chatlog.scrollHeight;
+    }
+
+    async function loadIdentity() {
+      const id = document.getElementById('identityId').value;
+      const name = document.getElementById('identityName').value;
+      await fetch('/identity/load', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, name, traits: {} }) });
+      log(`Identidad "${id}" cargada`, 'assistant');
+    }
+
+    async function unloadIdentity() {
+      const id = document.getElementById('identityId').value;
+      await fetch('/identity/unload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      log(`Identidad "${id}" descargada`, 'assistant');
+    }
+
+    async function createSession() {
+      const identityId = document.getElementById('identityId').value;
+      const data = await fetch('/session/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identityId }) });
+      const json = await data.json();
+      document.getElementById('sessionId').value = json.session.id;
+      log(`Sesión creada: ${json.session.id}`, 'assistant');
+    }
+
+    async function sendMessage() {
+      const session = document.getElementById('sessionId').value;
+      const message = document.getElementById('messageInput').value;
+      if (!session || !message) return;
+      log(`Tú: ${message}`, 'user');
+      const data = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session, message }) });
+      const json = await data.json();
+      if (json.error) log(`Error: ${json.error}`, 'error');
+      else log(`Alex: ${json.reply}`, 'assistant');
+      document.getElementById('messageInput').value = '';
+    }
+
+    async function getStatus() {
+      const data = await fetch('/runtime/status');
+      const json = await data.json();
+      document.getElementById('status').textContent = JSON.stringify(json, null, 2);
+    }
+
+    async function getGenome() {
+      const id = document.getElementById('identityId').value;
+      const data = await fetch('/genome/' + id);
+      const json = await data.json();
+      document.getElementById('genome').textContent = JSON.stringify(json, null, 2);
+    }
+
+    async function listRelationships() {
+      const id = document.getElementById('identityId').value;
+      const data = await fetch('/relationship/list/' + id);
+      const json = await data.json();
+      document.getElementById('relationships').textContent = JSON.stringify(json, null, 2);
+    }
+
+    // Inicializar
+    getStatus();
+  </script>
+</body>
+</html>
