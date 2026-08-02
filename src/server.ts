@@ -20,7 +20,21 @@ import { getDb, closeDb } from './storage/Database';
 
 const app = express()
 mountStudio(app);
-app.use(express.json());
+app.use(express.json())
+// Middleware de autenticación (excepto para endpoints públicos)
+app.use((req, res, next) => {
+  // Endpoints públicos
+  const publicPaths = ['/runtime/status', '/studio', '/'];
+  if (publicPaths.some(p => req.path.startsWith(p))) {
+    return next();
+  }
+  // Verificar API key
+  const apiKey = req.headers['x-api-key'] as string;
+  if (!apiKey || !authService.validate(apiKey)) {
+    return res.status(401).json({ error: 'Unauthorized. Provide x-api-key header.' });
+  }
+  next();
+});;
 
 const PORT = process.env.PORT || 4870;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -31,6 +45,9 @@ const sessionManager = new PersistentSessionManager();
 const identityCache = new IdentityCache(300000);
 const memory = new PersistentMemoryStore()
 const secureMemory = new SecureMemoryStore(memory)
+const authService = new AuthService();
+const rateLimiter = new RateLimiter(60000, 60);
+rateLimiter.startCleanup();
 const versionEngine = new VersionEngine()
 const syncEngine = new SyncEngine('instance-' + Math.random().toString(36).substr(2, 9));
 syncEngine.start(5000);;;;
@@ -82,7 +99,7 @@ app.post('/session/delete', (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/chat', async (req, res) => {
+app.post('/chat', rateLimiter.middleware.bind(rateLimiter), async (req, res) => {
   const { session, message } = req.body;
   if (!session || !message) {
     return res.status(400).json({ error: 'session and message required' });
@@ -183,6 +200,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 
