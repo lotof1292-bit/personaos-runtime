@@ -13,9 +13,11 @@ import { PersistentMemoryStore } from './storage/PersistentMemoryStore';
 import { SecureMemoryStore } from './security/SecureMemoryStore';
 import { SnapshotStore } from './storage/SnapshotStore'
 import { BridgeManager } from './bridges/BridgeManager';
-import { TelegramBridge } from './bridges/TelegramBridge';
+import { TelegramBridge } from './bridges/TelegramBridge'
+import { DiscordBridge } from './bridges/DiscordBridge';;
 import { BridgeManager } from './bridges/BridgeManager';
-import { TelegramBridge } from './bridges/TelegramBridge';;
+import { TelegramBridge } from './bridges/TelegramBridge'
+import { DiscordBridge } from './bridges/DiscordBridge';;;
 import { getDb, closeDb } from './storage/Database';
 
 const app = express()
@@ -54,10 +56,12 @@ syncEngine.start(5000);;;;
 const snapshotStore = new SnapshotStore()
 const relationshipStore = new RelationshipStore()
 const bridgeManager = new BridgeManager(runtime);
-bridgeManager.register(new TelegramBridge());
+bridgeManager.register(new TelegramBridge())
+bridgeManager.register(new DiscordBridge());;
 const relationshipStore = new RelationshipStore()
 const bridgeManager = new BridgeManager(runtime);
-bridgeManager.register(new TelegramBridge());;
+bridgeManager.register(new TelegramBridge())
+bridgeManager.register(new DiscordBridge());;;
 const engine = new SimpleEngine();
 const compiler = new ConversationCompiler();
 const driver = USE_OPENAI ? new OpenAIDriver(OPENAI_API_KEY) : new MockDriver();
@@ -200,6 +204,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 
