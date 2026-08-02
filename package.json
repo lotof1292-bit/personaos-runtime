@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "jest --coverage"
+    "test": "jest --coverage"`n    "test:watch": "jest --watch"`n    "benchmark": "jest tests/benchmark.test.ts --verbose --no-coverage"`n    "test:all": "jest --coverage --verbose"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",
@@ -25,3 +25,4 @@
     "typescript": "^5.3.3"
   }
 }
+
