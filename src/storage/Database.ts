@@ -1,4 +1,4 @@
-﻿import Database from 'better-sqlite3';
+import Database from 'better-sqlite3';
 import path from 'path';
 
 const DB_PATH = process.env.PERSONAOS_DB_PATH || './data/personaos.db';
@@ -41,6 +41,8 @@ function initSchema(): void {
       timestamp TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (identity_id) REFERENCES identities(id)
     );
+
+    CREATE TABLE IF NOT EXISTS relationships (id INTEGER PRIMARY KEY AUTOINCREMENT, identity_id TEXT NOT NULL, target_identity_id TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'friend', strength REAL NOT NULL DEFAULT 0.5, metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')), UNIQUE(identity_id, target_identity_id), FOREIGN KEY (identity_id) REFERENCES identities(id), FOREIGN KEY (target_identity_id) REFERENCES identities(id));
 
     CREATE TABLE IF NOT EXISTS snapshots (
       id TEXT PRIMARY KEY,
