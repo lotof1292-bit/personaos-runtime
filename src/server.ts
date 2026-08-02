@@ -120,6 +120,12 @@ app.get('/snapshot/list/:identityId', (req, res) => {
   res.json(snapshots);
 });
 
+
+app.get("/genome/:identityId", (req, res) => {
+  // Por ahora devuelve el genoma por defecto (Alex)
+  const { alexGenome } = require('./genome/alexGenome');
+  res.json(alexGenome);
+});
 app.get('/runtime/status', (_, res) => {
   const db = getDb();
   const identityCount = db.prepare('SELECT COUNT(*) as count FROM identities').get() as any;
@@ -165,5 +171,6 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
