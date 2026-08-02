@@ -30,7 +30,8 @@ const identityManager = new IdentityManager();
 const sessionManager = new PersistentSessionManager();
 const identityCache = new IdentityCache(300000);
 const memory = new PersistentMemoryStore()
-const secureMemory = new SecureMemoryStore(memory);;
+const secureMemory = new SecureMemoryStore(memory)
+const versionEngine = new VersionEngine();;;
 const snapshotStore = new SnapshotStore()
 const relationshipStore = new RelationshipStore()
 const bridgeManager = new BridgeManager(runtime);
@@ -180,6 +181,7 @@ process.on('SIGTERM', async () => {
   server.close();
   process.exit(0);
 });
+
 
 
 
