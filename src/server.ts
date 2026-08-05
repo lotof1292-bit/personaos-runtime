@@ -40,7 +40,7 @@ const engine = new SimpleEngine();
 const compiler = new ConversationCompiler();
 const driver = USE_OPENAI ? new OpenAIDriver(OPENAI_API_KEY) : new MockDriver();
 
-const runtime = new PersonaRuntime(identityManager, sessionManager, memory, engine, compiler, driver);
+const runtime = new PersonaRuntime(identityManager, sessionManager as any, memory, engine, compiler, driver);
 const bridgeManager = new BridgeManager(runtime);
 bridgeManager.register(new TelegramBridge());
 bridgeManager.register(new DiscordBridge());

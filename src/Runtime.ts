@@ -1,9 +1,9 @@
-﻿import { IdentityManager } from "./IdentityManager";
-import { SessionManager } from "./SessionManager";
-import { MemoryStore } from "./memory/MemoryStore";
-import { PersonaEngine } from "./engine/PersonaEngine";
-import { IRCompiler } from "./IRCompiler";
-import { ProviderDriver } from "./ProviderDriver";
+import { IdentityManager } from './IdentityManager';
+import { SessionManager } from './SessionManager';
+import { MemoryStore } from './memory/MemoryStore';
+import { PersonaEngine } from './engine/PersonaEngine';
+import { IRCompiler } from './IRCompiler';
+import { ProviderDriver } from './ProviderDriver';
 
 export class PersonaRuntime {
   constructor(
@@ -17,14 +17,13 @@ export class PersonaRuntime {
 
   async chat(sessionId: string, message: string): Promise<string> {
     const session = this.sessions.resolve(sessionId);
-    if (!session) throw new Error("Session not found");
-
+    if (!session) throw new Error('Session not found');
     const identity = this.identities.resolve(session.identityId);
-    if (!identity) throw new Error("Identity not loaded");
-
+    if (!identity) throw new Error('Identity not loaded');
     const memory = await this.memory.load(identity.id);
     const result = await this.engine.execute({ identity, memory, message });
     const payload = this.compiler.compile(result.ir);
+    (payload.messages as any[]).push({ role: 'user', content: message });
     const response = await this.driver.chat(payload);
     await this.memory.update(identity.id, message, response);
     return response;

@@ -11,7 +11,7 @@ export class TelegramBridge implements Bridge {
     this.config = config;
     const token = config.credentials['botToken'];
     this.apiBase = 'https://api.telegram.org/bot' + token;
-    const me = await fetch(this.apiBase + '/getMe').then(r => r.json());
+    const me: any = await fetch(this.apiBase + '/getMe').then(r => r.json());
     if (!me.ok) throw new Error('Invalid Telegram bot token: ' + me.description);
     console.log('Telegram bridge started for persona: ' + config.personaId);
     this.pollingInterval = setInterval(() => this.poll(), 2000);
@@ -37,7 +37,7 @@ export class TelegramBridge implements Bridge {
   private async poll(): Promise<void> {
     if (!this.config) return;
     try {
-      const updates = await fetch(this.apiBase + '/getUpdates?offset=' + (this.lastUpdateId + 1) + '&timeout=30').then(r => r.json());
+      const updates: any = await fetch(this.apiBase + '/getUpdates?offset=' + (this.lastUpdateId + 1) + '&timeout=30').then(r => r.json());
       if (!updates.ok) return;
       for (const update of updates.result) {
         if (update.message && update.message.text) {
